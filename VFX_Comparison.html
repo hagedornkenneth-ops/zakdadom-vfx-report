@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090b0d">
+  <title>Zakdadom — Spike A mot Spike B</title>
+  <meta name="description" content="Mobilvänlig A/B-jämförelse av Zakdadoms procedurshader och GPU-simulerade pixelvätska.">
+  <style>
+    :root { color-scheme: dark; --bg:#090b0d; --panel:#12171b; --line:#2b3338; --ink:#f5efe3; --muted:#b9b1a6; --a:#f4b84b; --b:#67d391; --blood:#e73645; }
+    * { box-sizing:border-box; }
+    html { background:var(--bg); scroll-behavior:smooth; }
+    body { margin:0; color:var(--ink); background:radial-gradient(circle at 85% 0,rgba(103,211,145,.09),transparent 28rem),radial-gradient(circle at 0 18%,rgba(231,54,69,.10),transparent 24rem),var(--bg); font:16px/1.55 Inter,system-ui,-apple-system,"Segoe UI",sans-serif; }
+    a { color:#9edcff; }
+    .shell { width:min(1100px,calc(100% - 28px)); margin:auto; }
+    header { padding:54px 0 34px; border-bottom:1px solid var(--line); }
+    .eyebrow { color:var(--b); font-size:.72rem; font-weight:900; letter-spacing:.16em; text-transform:uppercase; }
+    h1 { margin:9px 0 14px; font-size:clamp(2.25rem,9vw,5.5rem); line-height:.94; letter-spacing:-.055em; }
+    h1 span { color:var(--blood); }
+    .lede { max-width:780px; margin:0; color:#d8d2c8; font-size:clamp(1.04rem,2.5vw,1.35rem); }
+    nav { position:sticky; top:0; z-index:5; overflow-x:auto; border-bottom:1px solid var(--line); background:rgba(9,11,13,.91); backdrop-filter:blur(12px); scrollbar-width:none; }
+    nav::-webkit-scrollbar { display:none; }
+    nav .shell { display:flex; gap:18px; padding:12px 0; }
+    nav a { color:var(--muted); text-decoration:none; white-space:nowrap; font-size:.82rem; }
+    section { padding:48px 0; border-bottom:1px solid var(--line); }
+    h2 { margin:0 0 12px; font-size:clamp(1.65rem,5vw,3rem); line-height:1.05; letter-spacing:-.035em; }
+    h3 { margin:0 0 7px; font-size:1rem; }
+    p { margin:0 0 15px; }
+    .intro { max-width:780px; color:var(--muted); }
+    .verdict { padding:22px; border:1px solid rgba(103,211,145,.45); border-radius:16px; background:linear-gradient(145deg,rgba(103,211,145,.10),rgba(18,23,27,.9)); }
+    .verdict strong { display:block; margin-bottom:8px; color:var(--b); font-size:clamp(1.35rem,4vw,2.15rem); line-height:1.1; }
+    figure { margin:24px 0 0; }
+    .frame { overflow:hidden; border:1px solid var(--line); border-radius:13px; background:#050607; box-shadow:0 20px 60px rgba(0,0,0,.35); }
+    .frame img { display:block; width:100%; height:auto; image-rendering:pixelated; }
+    figcaption { margin-top:9px; color:#918b82; font-size:.82rem; }
+    .pair { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:20px; }
+    .card { overflow:hidden; border:1px solid var(--line); border-radius:13px; background:var(--panel); }
+    .card.a { border-top:3px solid var(--a); }
+    .card.b { border-top:3px solid var(--b); }
+    .card header { padding:13px 14px; border:0; }
+    .card header b { display:block; }
+    .card header span { color:var(--muted); font-size:.77rem; }
+    .card img { display:block; width:100%; image-rendering:pixelated; }
+    .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:22px; }
+    .note { padding:17px; border:1px solid var(--line); border-radius:12px; background:var(--panel); }
+    .note p:last-child { margin-bottom:0; color:var(--muted); }
+    .facts { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:20px; }
+    .fact { padding:15px; border:1px solid var(--line); border-radius:11px; background:#101519; }
+    .fact b { display:block; color:var(--b); font-size:1.2rem; }
+    .fact span { color:var(--muted); font-size:.78rem; }
+    ul { padding-left:20px; }
+    li + li { margin-top:8px; }
+    code { color:#ffd49c; }
+    .cta { display:inline-block; margin-top:9px; padding:11px 15px; border-radius:9px; background:var(--b); color:#07110b; text-decoration:none; font-weight:850; }
+    footer { padding:34px 0 60px; color:#827c74; font-size:.82rem; }
+    @media (max-width:760px) { .grid,.facts { grid-template-columns:1fr 1fr; } section { padding:38px 0; } }
+    @media (max-width:480px) { .shell { width:min(100% - 20px,1100px); } header { padding-top:42px; } .pair { gap:6px; } .card header { padding:9px; } .card header span { display:none; } .grid,.facts { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="shell">
+      <div class="eyebrow">Genomförd VFX-plan · 28 juli 2026</div>
+      <h1>Spike A <span>mot</span> Spike B</h1>
+      <p class="lede">Samma Blood ZAK + Storm DA + Venom DOM, samma tider och samma kamera. Skillnaden är om vågorna ritas matematiskt eller faktiskt simuleras som ett material.</p>
+    </div>
+  </header>
+  <nav><div class="shell"><a href="#verdict">Resultat</a><a href="#motion">I rörelse</a><a href="#elements">Element</a><a href="#system">Systemet</a><a href="#test">Verifiering</a><a href="index.html">Researchrapport</a></div></nav>
+  <main class="shell">
+    <section id="verdict">
+      <div class="verdict">
+        <strong>Spike B vinner den tekniska gaten.</strong>
+        <p>GPU-versionen behåller spellets exakta PBAoE-form men ger oss ett verkligt tillstånd som ordimpulser kan störa. Den har mörkare dalar, vågor som fortplantas och materialreaktioner som kan byggas ut utan en specialritad effekt för varje kristallkombination.</p>
+        <p><b>Det här är inte slutpolish.</b> Nästa konstpass ska minska rena vita stormband, göra Blood ännu tjockare i rörelsen och låta Venom-bubblor bryta vågkammen tydligare. Men den svåra arkitekturfrågan är avgjord.</p>
+      </div>
+    </section>
+
+    <section id="motion">
+      <h2>Se skillnaden i rörelse</h2>
+      <p class="intro">Båda laddningarna går från ZAK till ZAK DA och vidare mot ZAKDADOM. Titta främst efter vad som händer när DA läggs till: i B lever tidigare vågor vidare och möter den nya impulsen.</p>
+      <figure>
+        <div class="frame"><img src="spike_a_b_comparison_motion.gif" alt="Animerad jämförelse av Spike A och Spike B" loading="eager"></div>
+        <figcaption>Vänster: shaderband. Höger: 128×128 height-field med föregående och nuvarande vätsketillstånd.</figcaption>
+      </figure>
+      <div class="pair">
+        <article class="card a"><header><b>Spike A</b><span>Procedurshader · kontrollversion</span></header><img src="spike_a_blood_storm_venom_charge.png" alt="Spike A full laddning" loading="lazy"></article>
+        <article class="card b"><header><b>Spike B</b><span>GPU height-field · kandidat</span></header><img src="spike_b_blood_storm_venom_charge.png" alt="Spike B full laddning" loading="lazy"></article>
+      </div>
+    </section>
+
+    <section id="elements">
+      <h2>Samma system, olika materia</h2>
+      <p class="intro">Formen kommer fortfarande från ordet och kristallen. GPU-fältet ändrar ytan inuti formen; det inför ingen siktning och flyttar aldrig spellen från spelaren.</p>
+      <div class="grid">
+        <div class="note"><h3>Blood</h3><p>Hög viskositet, långsammare dämpning och tjocka ringimpulser. Målet är vikande vågkammar snarare än partikelsprut.</p></div>
+        <div class="note"><h3>Storm</h3><p>Högre styvhet, snabbare fronter och elektriska highlights längs de höjder som redan finns.</p></div>
+        <div class="note"><h3>Venom</h3><p>Formen kan bli en bakåtriktad sektor eller halvmåne. Korrosiv reaktion injicerar kokpunkter i bärarmaterialet.</p></div>
+      </div>
+      <div class="pair">
+        <article class="card a"><header><b>A · Blood</b></header><img src="spike_a_blood_charge.png" alt="Blood i Spike A" loading="lazy"></article>
+        <article class="card b"><header><b>B · Blood</b></header><img src="spike_b_blood_charge.png" alt="Blood i Spike B" loading="lazy"></article>
+        <article class="card a"><header><b>A · Storm</b></header><img src="spike_a_storm_charge.png" alt="Storm i Spike A" loading="lazy"></article>
+        <article class="card b"><header><b>B · Storm</b></header><img src="spike_b_storm_charge.png" alt="Storm i Spike B" loading="lazy"></article>
+        <article class="card a"><header><b>A · Venom</b></header><img src="spike_a_venom_charge.png" alt="Venom i Spike A" loading="lazy"></article>
+        <article class="card b"><header><b>B · Venom</b></header><img src="spike_b_venom_charge.png" alt="Venom i Spike B" loading="lazy"></article>
+      </div>
+    </section>
+
+    <section id="system">
+      <h2>Vad som byggdes</h2>
+      <ul>
+        <li>Tre R32F-texturer roterar mellan föregående, nuvarande och nästa höjdfält.</li>
+        <li>Varje nytt ord skapar en radial impuls. Fältet nollställs först när hela casten tar slut, så ZAK kan påverkas av DA och DOM.</li>
+        <li>Blood, Storm och Venom skickar allmänna egenskaper — viskositet, energi, kokning och reaktion — inte hårdkodade kombinationsnamn.</li>
+        <li>Samma <code>SpellCastPlan</code> klipper shader och träffyta till radie, sektor, riktning och hålcentrum.</li>
+        <li><b>V</b> växlar live mellan Spike A och Spike B. Om compute saknas faller B automatiskt tillbaka till A:s renderer.</li>
+      </ul>
+      <div class="facts">
+        <div class="fact"><b>128×128</b><span>simuleringsfält</span></div>
+        <div class="fact"><b>192 KiB</b><span>tre höjdtexturer per aktiv yta</span></div>
+        <div class="fact"><b>≈0,98 M</b><span>celluppdateringar/sek vid 60 Hz</span></div>
+        <div class="fact"><b>1 input</b><span>samma player-centered cast</span></div>
+      </div>
+    </section>
+
+    <section id="test">
+      <h2>Verifierat i den spelbara prototypen</h2>
+      <p class="intro">Körningen gjordes med Godot 4.6.2, Vulkan Forward+ och NVIDIA RTX 3090. GPU-testet bekräftar aktiv compute och riktiga dispatches för samtliga recept.</p>
+      <ul>
+        <li>Smoke, combat, spell grammar, workbench, Rat Blood-loop, camp-meta och hela femrumsrutten: <b>7/7 godkända</b>.</li>
+        <li>A/B-fångsten startar båda renderers från samma scen och misslyckas om GPU-fältet inte blir redo eller utför arbete.</li>
+        <li>Headless-tester utan RenderingDevice fortsätter genom shaderfallbacken utan att påverka spelmekanik eller sparfil.</li>
+        <li>Forward+ är nu projektets aktiva renderer; 3D har inte återinförts och spelet är fortfarande äkta top-down 2D-pixelspel.</li>
+      </ul>
+      <a class="cta" href="index.html">Läs hela tekniska researchrapporten</a>
+    </section>
+  </main>
+  <footer><div class="shell">Zakdadom VFX Spike B · byggd som jämförelse, inte som låst slutstil.</div></footer>
+</body>
+</html>
