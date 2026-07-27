@@ -1,0 +1,578 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Zakdadom — teknisk VFX-research</title>
+  <meta name="description" content="Teknisk research, riktning och prototypplan för systemiska pixelspells i Zakdadom.">
+  <style>
+    :root {
+      --ink: #f5efe3;
+      --muted: #b9b1a6;
+      --dim: #7f7a72;
+      --void: #090b0d;
+      --panel: #11161a;
+      --panel-2: #171d21;
+      --line: #2b3338;
+      --blood: #e73645;
+      --blood-dark: #5f0d1e;
+      --venom: #a8ef4a;
+      --storm: #69c8ff;
+      --gold: #f4b84b;
+      --good: #67d391;
+      --warn: #ffbb4a;
+      --bad: #ff6572;
+      --shadow: 0 18px 60px rgba(0,0,0,.35);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--void); }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 80% -10%, rgba(105,200,255,.09), transparent 32rem),
+        radial-gradient(circle at 5% 18%, rgba(231,54,69,.10), transparent 28rem),
+        var(--void);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.58;
+    }
+    a { color: #9edcff; text-decoration-color: rgba(158,220,255,.45); text-underline-offset: 3px; }
+    a:hover { color: white; }
+    code { color: #ffd49c; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+
+    .shell { width: min(1180px, calc(100% - 36px)); margin: 0 auto; }
+    .hero { padding: 72px 0 50px; border-bottom: 1px solid var(--line); }
+    .eyebrow { color: var(--gold); font-size: .77rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+    h1 { margin: 10px 0 18px; max-width: 950px; font-size: clamp(2.5rem, 7vw, 6.1rem); line-height: .94; letter-spacing: -.055em; }
+    h1 span { color: var(--blood); }
+    .lede { max-width: 820px; margin: 0; font-size: clamp(1.08rem, 2.1vw, 1.42rem); color: #d9d3c8; }
+    .meta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 30px; }
+    .pill { border: 1px solid var(--line); background: rgba(17,22,26,.75); padding: 8px 12px; border-radius: 999px; color: var(--muted); font-size: .86rem; }
+
+    .nav {
+      position: sticky; top: 0; z-index: 5;
+      border-bottom: 1px solid var(--line);
+      background: rgba(9,11,13,.88); backdrop-filter: blur(14px);
+    }
+    .nav .shell { display: flex; gap: 18px; overflow-x: auto; padding: 13px 0; scrollbar-width: none; }
+    .nav a { color: var(--muted); text-decoration: none; font-size: .85rem; white-space: nowrap; }
+    .nav a:hover { color: white; }
+
+    main { padding: 24px 0 90px; }
+    section { padding: 64px 0; border-bottom: 1px solid var(--line); }
+    section:last-child { border-bottom: 0; }
+    h2 { margin: 0 0 15px; font-size: clamp(1.8rem, 4vw, 3.1rem); line-height: 1.05; letter-spacing: -.035em; }
+    h3 { margin: 0 0 8px; font-size: 1.05rem; }
+    p { margin: 0 0 16px; }
+    .section-intro { max-width: 800px; color: var(--muted); font-size: 1.06rem; }
+
+    .verdict {
+      display: grid; grid-template-columns: 1.2fr .8fr; gap: 24px;
+      padding: 30px; border: 1px solid rgba(103,211,145,.42); border-radius: 18px;
+      background: linear-gradient(145deg, rgba(103,211,145,.09), rgba(17,22,26,.82)); box-shadow: var(--shadow);
+    }
+    .verdict strong.big { display: block; margin-bottom: 12px; color: var(--good); font-size: clamp(1.5rem, 3vw, 2.4rem); line-height: 1.06; }
+    .verdict aside { border-left: 1px solid var(--line); padding-left: 24px; color: var(--muted); }
+    .checklist { list-style: none; margin: 0; padding: 0; }
+    .checklist li { position: relative; padding: 7px 0 7px 25px; }
+    .checklist li::before { content: "✓"; position: absolute; left: 0; color: var(--good); font-weight: 900; }
+    .checklist.reject li::before { content: "×"; color: var(--bad); }
+
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 28px; }
+    .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 28px; }
+    .card { border: 1px solid var(--line); background: linear-gradient(160deg, var(--panel-2), var(--panel)); padding: 22px; border-radius: 14px; }
+    .card p:last-child { margin-bottom: 0; }
+    .card .tag { display: inline-block; margin-bottom: 13px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 4px; color: var(--dim); font-size: .7rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .card.good { border-color: rgba(103,211,145,.4); }
+    .card.warn { border-color: rgba(255,187,74,.4); }
+    .card.bad { border-color: rgba(255,101,114,.4); }
+
+    figure { margin: 28px 0 0; }
+    .frame { overflow: hidden; border: 1px solid var(--line); border-radius: 14px; background: #050607; box-shadow: var(--shadow); }
+    .frame img { display: block; width: 100%; height: auto; image-rendering: pixelated; }
+    figcaption { margin-top: 10px; color: var(--dim); font-size: .84rem; }
+    .failure-notes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 14px; }
+    .failure-notes div { padding: 12px; border: 1px solid rgba(255,101,114,.28); border-radius: 10px; background: rgba(255,101,114,.045); color: #d7c5c4; font-size: .84rem; }
+    .failure-notes b { display: block; margin-bottom: 3px; color: var(--bad); }
+
+    .target-stage { position: relative; overflow: hidden; min-height: 330px; border: 1px solid var(--line); border-radius: 16px; background: #11191e; }
+    #targetCanvas { display: block; width: 100%; height: 330px; image-rendering: pixelated; }
+    .target-label { position: absolute; left: 16px; bottom: 14px; padding: 7px 9px; border-radius: 6px; background: rgba(0,0,0,.66); color: #d8d1c7; font: 700 .75rem ui-monospace, monospace; }
+
+    .lesson { display: grid; grid-template-columns: 82px 1fr; gap: 18px; align-items: start; }
+    .lesson + .lesson { margin-top: 18px; }
+    .mark { display: grid; place-items: center; aspect-ratio: 1; border: 1px solid var(--line); border-radius: 12px; background: #0c1013; color: var(--gold); font-size: 1.5rem; font-weight: 950; }
+    .lesson p { margin-bottom: 0; color: var(--muted); }
+
+    .matrix-wrap { overflow-x: auto; margin-top: 26px; border: 1px solid var(--line); border-radius: 14px; }
+    table { width: 100%; min-width: 900px; border-collapse: collapse; background: var(--panel); }
+    th, td { padding: 14px 15px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--dim); background: #0d1114; font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; }
+    tr:last-child td { border-bottom: 0; }
+    tr.recommended { background: rgba(103,211,145,.07); }
+    .score { white-space: nowrap; color: var(--gold); letter-spacing: .06em; }
+    .decision { display: inline-block; padding: 4px 7px; border-radius: 5px; font-size: .72rem; font-weight: 850; text-transform: uppercase; }
+    .decision.yes { color: #07120c; background: var(--good); }
+    .decision.maybe { color: #181003; background: var(--warn); }
+    .decision.no { color: white; background: #7d2230; }
+
+    .pipeline { margin-top: 30px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+    .node { position: relative; min-height: 126px; padding: 15px; border: 1px solid var(--line); border-radius: 11px; background: linear-gradient(165deg,#1a2126,#0e1215); }
+    .node:not(:last-child)::after { content: "→"; position: absolute; right: -10px; top: 47px; z-index: 1; color: var(--gold); font-weight: 900; }
+    .node small { display: block; margin-bottom: 8px; color: var(--dim); font-size: .67rem; letter-spacing: .08em; text-transform: uppercase; }
+    .node b { display: block; margin-bottom: 7px; line-height: 1.12; }
+    .node span { color: var(--muted); font-size: .78rem; line-height: 1.35; }
+    .node.blood { border-top: 3px solid var(--blood); }
+    .node.storm { border-top: 3px solid var(--storm); }
+    .node.venom { border-top: 3px solid var(--venom); }
+    .node.gold { border-top: 3px solid var(--gold); }
+
+    .layers { display: grid; grid-template-columns: .8fr 1.2fr; gap: 28px; margin-top: 30px; align-items: center; }
+    .layer-stack { perspective: 700px; min-height: 340px; padding-top: 24px; }
+    .slab { width: 86%; height: 68px; margin: -10px auto 0; padding: 13px 18px; border: 1px solid; border-radius: 8px; transform: rotateX(58deg) rotateZ(-8deg); box-shadow: 0 18px 25px rgba(0,0,0,.4); font-weight: 850; }
+    .slab small { display: block; font-weight: 500; opacity: .74; }
+    .s5 { border-color: #c89d4a; background: rgba(244,184,75,.25); }
+    .s4 { border-color: #68737b; background: rgba(105,200,255,.15); }
+    .s3 { border-color: #6c97b0; background: rgba(105,200,255,.21); }
+    .s2 { border-color: #b53142; background: rgba(231,54,69,.36); }
+    .s1 { border-color: #5e6b72; background: rgba(58,74,82,.75); }
+
+    .grammar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 28px; }
+    .word { padding: 24px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); }
+    .word h3 { font-size: 1.8rem; letter-spacing: .04em; }
+    .word .role { margin: 0 0 16px; color: var(--gold); font-size: .74rem; font-weight: 850; text-transform: uppercase; }
+    .channels { display: grid; gap: 8px; }
+    .channel { display: grid; grid-template-columns: 70px 1fr; gap: 8px; align-items: center; font-size: .78rem; color: var(--muted); }
+    .bar { height: 7px; overflow: hidden; border-radius: 99px; background: #293036; }
+    .bar i { display: block; height: 100%; border-radius: inherit; background: currentColor; }
+
+    .road { display: grid; gap: 12px; margin-top: 28px; counter-reset: phase; }
+    .phase { position: relative; display: grid; grid-template-columns: 130px 1fr 180px; gap: 20px; padding: 20px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+    .phase::before { counter-increment: phase; content: counter(phase, decimal-leading-zero); color: var(--dim); font-weight: 900; }
+    .phase .duration { color: var(--gold); font-weight: 800; text-align: right; }
+    .phase p { margin: 4px 0 0; color: var(--muted); }
+
+    .gate { margin-top: 20px; padding: 22px; border-left: 4px solid var(--gold); background: rgba(244,184,75,.07); }
+    .gate b { color: var(--gold); }
+
+    .risks { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 24px; }
+    .risk { display: grid; grid-template-columns: 110px 1fr; gap: 14px; padding: 18px; border: 1px solid var(--line); border-radius: 11px; background: var(--panel); }
+    .risk b { color: var(--warn); }
+    .risk p { margin: 0; color: var(--muted); }
+
+    .sources { columns: 2; column-gap: 32px; margin: 26px 0 0; padding-left: 22px; }
+    .sources li { break-inside: avoid; margin: 0 0 12px; color: var(--muted); }
+    footer { padding: 30px 0 60px; color: var(--dim); font-size: .82rem; }
+
+    @media (max-width: 900px) {
+      .verdict, .two, .three, .layers { grid-template-columns: 1fr; }
+      .verdict aside { border-left: 0; border-top: 1px solid var(--line); padding: 20px 0 0; }
+      .failure-notes { grid-template-columns: repeat(2, 1fr); }
+      .pipeline { grid-template-columns: repeat(2, 1fr); }
+      .node::after { display: none; }
+      .grammar { grid-template-columns: 1fr; }
+      .phase { grid-template-columns: 70px 1fr; }
+      .phase .duration { grid-column: 2; text-align: left; }
+      .sources { columns: 1; }
+    }
+    @media (max-width: 580px) {
+      .shell { width: min(100% - 22px, 1180px); }
+      .hero { padding-top: 46px; }
+      section { padding: 44px 0; }
+      .failure-notes, .risks, .pipeline { grid-template-columns: 1fr; }
+      .risk { grid-template-columns: 1fr; }
+    }
+    @media print {
+      .nav { display: none; }
+      body { background: white; color: #111; }
+      .card, .verdict, .word, .phase, .risk, table { color: #111; background: white; box-shadow: none; }
+      .section-intro, .card p, .phase p, .risk p, .lesson p, figcaption, .verdict aside { color: #444; }
+      section { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="shell">
+      <div class="eyebrow">Zakdadom · VFX research · 27 juli 2026</div>
+      <h1>Tjock magi.<br><span>Avsiktliga pixlar.</span></h1>
+      <p class="lede">En teknisk riktning för spells som känns som material — blod som viker sig i tunga vågor, venom som kokar i massan och storm som sliter i ytan — utan att spelet förvandlas till ett flerårigt motorprojekt.</p>
+      <div class="meta">
+        <span class="pill">Godot 4.6</span>
+        <span class="pill">PC först</span>
+        <span class="pill">640 × 360 spelbild</span>
+        <span class="pill">GPU-renderad VFX-ö</span>
+        <span class="pill">Systemiska kombinationer</span>
+      </div>
+    </div>
+  </header>
+
+  <nav class="nav" aria-label="Rapportens delar">
+    <div class="shell">
+      <a href="#beslut">Beslut</a>
+      <a href="#problemet">Problemet</a>
+      <a href="#research">Lärdomar</a>
+      <a href="#alternativ">Alternativ</a>
+      <a href="#arkitektur">Arkitektur</a>
+      <a href="#grammatik">Spellgrammatik</a>
+      <a href="#plan">Prototypplan</a>
+      <a href="#risker">Risker</a>
+      <a href="#kallor">Källor</a>
+    </div>
+  </nav>
+
+  <main class="shell">
+    <section id="beslut">
+      <div class="verdict">
+        <div>
+          <strong class="big">Bygg inte en egen spelmotor. Bygg en egen VFX-renderare inuti Godot.</strong>
+          <p>Den rekommenderade lösningen är en avgränsad 3D-yta som renderas med riktiga ljusnormaler och eventuellt en liten GPU-simulering. Resultatet går därefter genom en lågupplöst pixelpass innan det läggs ovanpå det befintliga 2D-spelet.</p>
+          <p>Det ger oss kvaliteten från modern 3D-rendering, kontrollen från en specialbyggd spellmotor och samma tydliga pixelstil som resten av spelet.</p>
+        </div>
+        <aside>
+          <ul class="checklist">
+            <li>Behåll nuvarande ZAK / DA / DOM-regler</li>
+            <li>Behåll damageyta, cast speed och kombinationer</li>
+            <li>Byt endast hur spellen visualiseras</li>
+            <li>Börja med en vacker “fejkad” vätska</li>
+            <li>Lägg till fysik bara där den faktiskt förbättrar bilden</li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+
+    <section id="problemet">
+      <h2>Vad Spike A ersätter</h2>
+      <p class="section-intro">Den avvisade CPU-renderern visade sin datastruktur i stället för ett material: synliga celler, band och dekorativa partiklar. Bilden nedan är den nya shaderbaserade ersättaren efter rapportens första implementation.</p>
+      <figure>
+        <div class="frame"><img src="blood_storm_venom_charge.png" alt="Nuvarande Blood Storm Venom-effekt i Zakdadom"></div>
+        <figcaption>Spike A efter rapportens första implementation: en tät gemensam yta med Blood-kropp, Storm-ridgeljus och inbäddad Venom-reaktion.</figcaption>
+      </figure>
+      <div class="failure-notes">
+        <div><b>Rutnätet syns</b>Ögat hittar diskreta celler och horisontella band.</div>
+        <div><b>Ingen volym</b>Det saknas djup, ytspänning, glans och en sammanhängande vågkam.</div>
+        <div><b>Fel hierarki</b>Små pixlar konkurrerar med huvudformen i stället för att stödja den.</div>
+        <div><b>Fysiken säljer inte</b>Simulering finns, men den producerar inte en trovärdig silhuett.</div>
+      </div>
+
+      <div class="two">
+        <div class="card bad">
+          <span class="tag">Sluta göra</span>
+          <ul class="checklist reject">
+            <li>Rita varje simuleringscell som en synlig rektangel</li>
+            <li>Använda spridda partiklar som huvudeffekt</li>
+            <li>Försöka rädda massan med fler färger</li>
+            <li>Låta varje ny kristall få ett eget specialfall</li>
+          </ul>
+        </div>
+        <div class="card good">
+          <span class="tag">Börja göra</span>
+          <ul class="checklist">
+            <li>Rendera en sammanhängande yta först</li>
+            <li>Låta ljus och normaler beskriva tjockleken</li>
+            <li>Pixelisera efter att volymen är vacker</li>
+            <li>Låta materialdata driva samma generella renderer</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Målbild: en massa, inte ett moln</h2>
+      <p class="section-intro">Blood ska läsas som en enda tung kropp. Pixlarna får vara stora, men de måste sitta tätt och beskriva form. Bilden nedan är bara en schematisk lagerillustration — inte slutlig spelgrafik.</p>
+      <figure>
+        <div class="target-stage">
+          <canvas id="targetCanvas" width="900" height="330" aria-label="Schematisk pixelillustration av en tät blodvåg med venom och storm"></canvas>
+          <div class="target-label">MASSA → VÅGKAM → REAKTION → PIXELPASS</div>
+        </div>
+        <figcaption>En dominant blodkropp, ljus kant där ytan viker sig, venom som bubblar i materialet och storm som följer ytriktningen.</figcaption>
+      </figure>
+    </section>
+
+    <section id="research">
+      <h2>Vad andra tekniska lösningar lär oss</h2>
+      <p class="section-intro">De mest relevanta spelen gör inte samma sak, men tillsammans pekar de mot en tydlig Zakdadom-lösning.</p>
+
+      <div class="three">
+        <article class="card">
+          <span class="tag">Noita</span>
+          <h3>Simulera bara allt om simuleringen är världen</h3>
+          <p>Noitas specialmotor är motiverad eftersom den destruktibla, simulerade världen är själva spelet. Det är en viktig varning: en Noita-lik motor är rätt först när varje vägg, vätska och reaktion måste simuleras — inte för en lokal spell runt spelaren.</p>
+        </article>
+        <article class="card">
+          <span class="tag">Dead Cells</span>
+          <h3>Bygg vackert först, rasterisera sedan</h3>
+          <p>Dead Cells renderar enkla 3D-modeller i låg upplösning utan antialiasing. Lärdomen är att “riktig pixelstil” inte kräver att varje mellanled är 2D-pixlar. Det kräver en avsiktlig slutraster.</p>
+        </article>
+        <article class="card">
+          <span class="tag">Octopath Traveler II</span>
+          <h3>2D och 3D får blandas</h3>
+          <p>HD-2D använder pixelkaraktärer, 3D-miljö och modern belysning som ett sammanhängande bildspråk. För Zakdadom betyder det att en 3D-spellyta kan fungera — om den avslutas med samma pixelregler som resten.</p>
+        </article>
+      </div>
+
+      <div style="margin-top:32px">
+        <div class="lesson">
+          <div class="mark">01</div>
+          <div><h3>Vätskeytan kan vara ett height field</h3><p>Forskning om shallow-water och “virtual pipes” visar att en vätskeyta kan beskrivas som höjd och hastighet i ett litet 2D-fält. Det passar en spelcentrerad AoE mycket bättre än full 3D-vätska: vi behöver vågor och veck, inte blod som fyller en hel kubisk värld.</p></div>
+        </div>
+        <div class="lesson">
+          <div class="mark">02</div>
+          <div><h3>Metaballs är ett bra första steg</h3><p>Ett antal mjuka täthetsblobbar kan slås ihop till en kontinuerlig yta på GPU:n. Det skapar en tjock massa och tydliga kanter utan att vi först måste lösa komplett vätskefysik.</p></div>
+        </div>
+        <div class="lesson">
+          <div class="mark">03</div>
+          <div><h3>Normaler säljer mer än partiklar</h3><p>När ythöjdens lutning omvandlas till normaler kan ljuset skapa mörka djup, våta highlights och ljusa vikande kammar. Det är den information som saknas i den platta, randiga versionen.</p></div>
+        </div>
+        <div class="lesson">
+          <div class="mark">04</div>
+          <div><h3>GPU-data ska stanna på GPU:n</h3><p>Godot kan låta en compute shader skriva till en textur och sedan använda samma textur direkt i material. Ingen bild behöver läsas tillbaka till processorn varje bildruta.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="alternativ">
+      <h2>Tekniska vägar jämförda</h2>
+      <p class="section-intro">Betygen är en projektspecifik bedömning: hur väl tekniken uppfyller just Zakdadoms visuella löfte i förhållande till tid och risk.</p>
+      <div class="matrix-wrap">
+        <table>
+          <thead><tr><th>Lösning</th><th>Visuell potential</th><th>Systemiska kombinationer</th><th>Byggrisk</th><th>Bedömning</th></tr></thead>
+          <tbody>
+            <tr><td><b>Nuvarande CPU-rutnät</b><br><small>Synliga celler + Canvas-ritning</small></td><td class="score">★☆☆☆☆</td><td>Hög i data, låg i bild</td><td>Låg — men låst till fel utseende</td><td><span class="decision no">Avsluta</span></td></tr>
+            <tr><td><b>Ren 2D SDF / metaball-shader</b><br><small>Fejkad massa, procedurformer</small></td><td class="score">★★★★☆</td><td>Hög</td><td>Låg–medel</td><td><span class="decision yes">Spike A</span></td></tr>
+            <tr class="recommended"><td><b>3D-yta + GPU height field + pixelpass</b><br><small>Lokal simtextur, normaler, ljus</small></td><td class="score">★★★★★</td><td>Mycket hög</td><td>Medel</td><td><span class="decision yes">Målarkitektur</span></td></tr>
+            <tr><td><b>SPH-partikelvätska + screen-space-yta</b><br><small>Hundratals/tusentals 3D-partiklar</small></td><td class="score">★★★★★</td><td>Hög</td><td>Mycket hög</td><td><span class="decision maybe">Reservväg</span></td></tr>
+            <tr><td><b>Bakade sprites från Blender/Houdini</b><br><small>Offline-simulering till pixelsheet</small></td><td class="score">★★★★☆</td><td>Låg vid många kombinationer</td><td>Låg runtime, hög innehållskostnad</td><td><span class="decision maybe">Komplement</span></td></tr>
+            <tr><td><b>Egen Noita-lik spelmotor</b><br><small>Cellular automata över hela världen</small></td><td class="score">★★★★★</td><td>Extrem</td><td>Projektdefinierande</td><td><span class="decision no">Inte nu</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="gate"><b>Viktig princip:</b> börja med den snyggaste kontrollerbara illusionen. Bygg bara djupare fysik när vi kan peka ut exakt vilken bildkvalitet illusionen inte klarar.</div>
+    </section>
+
+    <section id="arkitektur">
+      <h2>Rekommenderad Zakdadom-renderer</h2>
+      <p class="section-intro">En isolerad “VFX-ö” gör att 2D-spelet kan vara kvar. Bara spells renderas i 3D och kompositeras tillbaka som pixelgrafik.</p>
+
+      <div class="pipeline" aria-label="Renderingspipeline">
+        <div class="node gold"><small>Gameplay</small><b>Cast plan</b><span>ZAK / DA / DOM, footprint, storlek och timing.</span></div>
+        <div class="node blood"><small>Form</small><b>SDF-mask</b><span>Ring, lob, bakåtkon, hål och spelbar träffyta.</span></div>
+        <div class="node venom"><small>Material</small><b>Fältdata</b><span>Densitet, viskositet, gift, storm och temperatur.</span></div>
+        <div class="node storm"><small>Rörelse</small><b>GPU-pass</b><span>Metaballs först; height field när det behövs.</span></div>
+        <div class="node blood"><small>Yta</small><b>3D-ljus</b><span>Normaler, djupfärg, specular, kam och skum.</span></div>
+        <div class="node gold"><small>Stil</small><b>Pixelpass</b><span>Låg upplösning, palett, nearest och stabil silhuett.</span></div>
+      </div>
+
+      <div class="layers">
+        <div class="layer-stack" aria-label="Visuella lager">
+          <div class="slab s5">L4 · Pixelpass<small>palett, raster, temporal kvantisering</small></div>
+          <div class="slab s4">L3 · Sekundär VFX<small>droppar, ånga, blixtgrenar</small></div>
+          <div class="slab s3">L2 · Vågkam<small>ljus vikning, menisk, skum</small></div>
+          <div class="slab s2">L1 · Huvudmassa<small>sammanhängande tjock yta</small></div>
+          <div class="slab s1">L0 · Gameplay-mask<small>exakt träffyta och läsbarhet</small></div>
+        </div>
+        <div>
+          <h3>Separera regler från bild</h3>
+          <p>Gameplay-masken är sanningen: vilka fiender träffas. Vätskeytan får vika, bukta och stänka runt den masken utan att göra spellen svårläst.</p>
+          <h3>Simtextur</h3>
+          <p>En lokal textur per aktiv spell, exempelvis 128–256 pixlar bred. Kanalerna lagrar höjd, hastighet, skum och reaktionsvärden. Den behöver aldrig läsas tillbaka till CPU:n.</p>
+          <h3>3D-yta</h3>
+          <p>En tät, platt mesh förskjuts av höjdtexturen. Materialet räknar ut ytnormaler, mörkt djup, våta highlights och vikande kammar.</p>
+          <h3>Pixelpass</h3>
+          <p>Endast VFX renderas i en lågupplöst <code>SubViewport</code>. Palettkvantisering och nearest-skalning gör att slutbilden sitter ihop med 32×32-världen.</p>
+        </div>
+      </div>
+
+      <div class="two">
+        <div class="card good">
+          <span class="tag">Kod vi behåller</span>
+          <p><code>SpellMaterialProfileData</code>, <code>SpellReactionData</code>, <code>SpellMaterialState</code>, <code>SpellReactionResolver</code>, cast plan, träffyta, damage och byggscenen.</p>
+        </div>
+        <div class="card warn">
+          <span class="tag">Kod vi ersätter</span>
+          <p><code>spell_pixel_fluid_surface.gd</code> som huvudrenderer. Partikelfältet får leva kvar i en mindre roll: stänk, gnistor, bubblor och avdunstning.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="grammatik">
+      <h2>Kombinationerna påverkas inte — de blir tydligare</h2>
+      <p class="section-intro">Den nya tekniken ersätter inte grundidén. Den ger materialreglerna fler synliga kanaler än bara färg och partikeltyp.</p>
+
+      <div class="grammar">
+        <article class="word">
+          <h3>ZAK</h3><p class="role">Kropp och födelse</p>
+          <p>Bestämmer vad massan huvudsakligen är och hur den börjar runt spelaren.</p>
+          <div class="channels">
+            <div class="channel">Form <div class="bar" style="color:var(--blood)"><i style="width:90%"></i></div></div>
+            <div class="channel">Täthet <div class="bar" style="color:var(--blood)"><i style="width:88%"></i></div></div>
+            <div class="channel">Tempo <div class="bar" style="color:var(--blood)"><i style="width:42%"></i></div></div>
+          </div>
+        </article>
+        <article class="word">
+          <h3>DA</h3><p class="role">Beteende under laddning</p>
+          <p>Bestämmer hur ytan rör sig, reagerar och bygger energi medan ordet hålls.</p>
+          <div class="channels">
+            <div class="channel">Turbulens <div class="bar" style="color:var(--storm)"><i style="width:82%"></i></div></div>
+            <div class="channel">Bubblor <div class="bar" style="color:var(--venom)"><i style="width:65%"></i></div></div>
+            <div class="channel">Laddning <div class="bar" style="color:var(--storm)"><i style="width:76%"></i></div></div>
+          </div>
+        </article>
+        <article class="word">
+          <h3>DOM</h3><p class="role">Skala och frigörelse</p>
+          <p>Bestämmer hur stort, våldsamt och långlivat materialet blir när spellen släpps.</p>
+          <div class="channels">
+            <div class="channel">Radie <div class="bar" style="color:var(--storm)"><i style="width:95%"></i></div></div>
+            <div class="channel">Vågkam <div class="bar" style="color:var(--blood)"><i style="width:80%"></i></div></div>
+            <div class="channel">Efterliv <div class="bar" style="color:var(--venom)"><i style="width:54%"></i></div></div>
+          </div>
+        </article>
+      </div>
+
+      <div class="three">
+        <article class="card"><span class="tag">Blood</span><h3>Materialregel</h3><p>Hög densitet och viskositet. Mörka djup. En eller två stora vikande kammar. Få men tunga droppar.</p></article>
+        <article class="card"><span class="tag">Storm</span><h3>Materialregel</h3><p>Ökar utbredning och acceleration. Ljus färdas längs åsar och bristningar i ytan, inte som jämnt utspridda konfettipixlar.</p></article>
+        <article class="card"><span class="tag">Venom</span><h3>Materialregel</h3><p>Sänker ytstabilitet, skapar bubblor och kokande fickor. Vid Blood + Venom deformeras blodytan inifrån.</p></article>
+      </div>
+
+      <div class="gate"><b>Exemplet Blood ZAK + Storm DA + Venom DOM:</b> en tät blodmassa föds runt spelaren; stormen driver snabbare, bredare vågor under laddningen; vid DOM bryter giftbubblor igenom hela den expanderande ytan och lämnar ett reaktivt efterfält. Det är fortfarande samma spellkombination — nu syns varje ord i en gemensam kropp.</div>
+    </section>
+
+    <section id="plan">
+      <h2>Byggplan med visuella stoppregler</h2>
+      <p class="section-intro">Vi ska inte spendera veckor på “rätt teknik” innan vi vet att den kan producera rätt bild. Därför jämför vi två små spikar mot samma stillbilder och spellrecept.</p>
+
+      <div class="road">
+        <div class="phase"><div></div><div><h3>Frys referensen</h3><p>Tre recept, samma arena och kamera: Blood; Blood + Storm; Blood + Storm + Venom. Spara stillbild och fem sekunders loop för varje.</p></div><div class="duration">½ dag</div></div>
+        <div class="phase"><div></div><div><h3>Spike A — “fejkad men vacker”</h3><p>SDF/metaballs, animerad vågprofil, normalkarta från höjd, 3D-ljus och pixelpass. Ingen full vätskefysik. Fokus på en tät massa och vikande vågkam.</p></div><div class="duration">2–4 dagar</div></div>
+        <div class="phase"><div></div><div><h3>Visuell gate</h3><p>Om Blood redan känns tjockt och de tre recepten är tydligt olika behåller vi den billigare lösningen. Om rörelsen känns syntetisk går vi vidare.</p></div><div class="duration">Gemensam review</div></div>
+        <div class="phase"><div></div><div><h3>Spike B — height field på GPU</h3><p>Ping-pong-texturer för höjd/hastighet, impulser från ord och reaktioner, normalrekonstruktion och samma pixelpass som Spike A.</p></div><div class="duration">5–8 dagar</div></div>
+        <div class="phase"><div></div><div><h3>Integrera materialgrammatiken</h3><p>Profiler mappar till generella parametrar: densitet, viskositet, ytspänning, turbulens, emission, bubblor, kamhöjd och release-impuls.</p></div><div class="duration">3–6 dagar</div></div>
+        <div class="phase"><div></div><div><h3>Produktion och verktyg</h3><p>Debugvy för kanaler, presets, prestandamätning, fallback-nivåer och fem ytterligare kristaller utan rendererspecialfall.</p></div><div class="duration">1–2 veckor</div></div>
+      </div>
+
+      <div class="two">
+        <div class="card good">
+          <span class="tag">Godkänd Blood</span>
+          <ul class="checklist">
+            <li>En sammanhängande, tät huvudmassa</li>
+            <li>Minst en tydlig vikande vågkam</li>
+            <li>Mörkt djup och våta, stabila highlights</li>
+            <li>Inga synliga simceller eller horisontella band</li>
+            <li>Står visuellt över golvet men under spelaren</li>
+          </ul>
+        </div>
+        <div class="card good">
+          <span class="tag">Godkänt system</span>
+          <ul class="checklist">
+            <li>Material kan kombineras utan unik renderer per recept</li>
+            <li>ZAK, DA och DOM går att läsa i rörelsen</li>
+            <li>Träffytan är tydlig även när ytan deformeras</li>
+            <li>640×360 och heltalsskalning är pixelstabilt</li>
+            <li>Relevanta GPU-kostnader mäts, inte gissas</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="risker">
+      <h2>Tekniska beslut och risker</h2>
+      <p class="section-intro">Det här är genomförbart i Godot, men det kräver ett medvetet plattformsval.</p>
+      <div class="risks">
+        <article class="risk"><b>Renderer</b><p>Projektet använder just nu <code>GL Compatibility</code>. Godots compute shaders kräver Forward+ eller Mobile. För PC-prototypen bör vi byta till Forward+ innan Spike B.</p></article>
+        <article class="risk"><b>Webb/mobil</b><p>Compute-stöd och drivrutiner är svagare på mobil, och Compatibility-spåret kan inte köra lösningen. En shader-only fallback bör finnas om dessa plattformar blir mål senare.</p></article>
+        <article class="risk"><b>GPU-stall</b><p>Vi får inte synkronisera och läsa tillbaka simuleringen varje bildruta. Texturerna stannar på GPU:n och konsumeras direkt av materialet.</p></article>
+        <article class="risk"><b>Pixel-flimmer</b><p>Lågupplöst 3D kan flimra. Kamera, UV och renderresolution måste vara låsta till ett stabilt raster; highlights kvantiseras och får inte vara subpixel-tunna.</p></article>
+        <article class="risk"><b>Komposition</b><p>VFX-ön behöver tydliga lager: huvudmassan bakom aktörer, vissa stänk framför. Vi ska inte försöka dela ett komplicerat 3D-djup med hela 2D-världen.</p></article>
+        <article class="risk"><b>Kombinationer</b><p>Datadrivna parametrar räcker långt, men extrema recept behöver klampning och en visuell prioriteringsregel så att allt inte blir maximalt samtidigt.</p></article>
+      </div>
+
+      <div class="gate"><b>När skulle egen motor vara rätt?</b> Om visionen ändras så att dungeonens väggar, blodpölar, gaser, eld och monsterkroppar alla ska bestå av interagerande simulerade pixlar. Då är Noita-spåret inte längre en VFX-fråga utan spelets centrala tekniska design.</div>
+    </section>
+
+    <section id="kallor">
+      <h2>Källor och vidare läsning</h2>
+      <p class="section-intro">Primärt officiell dokumentation, utvecklarpresentationer och publicerad grafikforskning. Slutsatserna ovan är min projektspecifika syntes av materialet.</p>
+      <ol class="sources">
+        <li><a href="https://docs.godotengine.org/en/stable/tutorials/shaders/compute_shaders.html">Godot: Using compute shaders</a> — rendererkrav, synkronisering och GPU-begränsningar.</li>
+        <li><a href="https://docs.godotengine.org/en/stable/classes/class_renderingdevice.html">Godot: RenderingDevice</a> — lågnivååtkomst till modern grafik och compute.</li>
+        <li><a href="https://docs.godotengine.org/en/stable/classes/class_texture2drd.html">Godot: Texture2DRD</a> — direkt användning av GPU-skapad textur i material.</li>
+        <li><a href="https://docs.godotengine.org/en/stable/classes/class_subviewport.html">Godot: SubViewport</a> — isolerad render target för VFX-ön.</li>
+        <li><a href="https://docs.godotengine.org/en/stable/classes/class_gpuparticles2d.html">Godot: GPUParticles2D</a> — sekundära partiklar och trails.</li>
+        <li><a href="https://www.gdcvault.com/play/1025695/Exploring-the-Tech-and-Design">GDC: Exploring the Tech and Design of Noita</a> — skalning av falling-sand och emergent fysik.</li>
+        <li><a href="https://noitagame.com/">Noita, officiell webbplats</a> — “every pixel is simulated”.</li>
+        <li><a href="https://www.gamedeveloper.com/production/art-design-deep-dive-using-a-3d-pipeline-for-2d-animation-in-i-dead-cells-i-">Motion Twin: 3D pipeline for 2D animation in Dead Cells</a> — lågupplöst rendering utan antialiasing.</li>
+        <li><a href="https://www.unrealengine.com/developer-interviews/octopath-traveler-ii-builds-a-bigger-bolder-world-in-its-stunning-hd-2d-style?lang=en-US">Acquire / Square Enix: Octopath Traveler II HD-2D</a> — pixelart, 3D och modern belysning.</li>
+        <li><a href="https://www.josstam.com/publications">Jos Stam: Stable Fluids</a> — grundläggande realtidsvätska.</li>
+        <li><a href="https://developer.nvidia.com/gpugems/gpugems/part-vi-beyond-triangles/chapter-38-fast-fluid-dynamics-simulation-gpu">GPU Gems: Fast Fluid Dynamics Simulation on the GPU</a>.</li>
+        <li><a href="https://developer.nvidia.com/gpugems/gpugems3/part-i-geometry/chapter-7-point-based-visualization-metaballs-gpu">GPU Gems 3: Metaballs on the GPU</a> — täthetsfält till kontinuerlig yta.</li>
+        <li><a href="https://www.sciencedirect.com/science/article/pii/S0097849318301341">Extended virtual pipes for stable small-scale shallow water</a> — height field, menisk och viskös småskalig vätska.</li>
+        <li><a href="https://kuiwuchn.github.io/rtsw.html">Real-time Height-field Simulation of Sand and Water Mixtures</a> — GPU-baserad height-field-simulering.</li>
+        <li><a href="https://onlinelibrary.wiley.com/doi/full/10.1111/cgf.14510">Narrow-Band Screen-Space Fluid Rendering</a> — alternativet för partikelbaserad vätskeyta.</li>
+      </ol>
+    </section>
+  </main>
+
+  <footer class="shell">Zakdadom · teknisk VFX-research · fristående beslutsunderlag. Ingen spelkod ändrades när rapporten togs fram.</footer>
+
+  <script>
+    // Deterministic, deliberately low-resolution concept diagram.
+    const canvas = document.getElementById('targetCanvas');
+    const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+    const W = 300, H = 110;
+    const off = document.createElement('canvas'); off.width = W; off.height = H;
+    const p = off.getContext('2d'); p.imageSmoothingEnabled = false;
+
+    p.fillStyle = '#121a20'; p.fillRect(0, 0, W, H);
+    p.fillStyle = '#18242a';
+    for (let y = 0; y < H; y += 12) for (let x = (y / 12) % 2 ? 8 : 0; x < W; x += 16) p.fillRect(x, y, 15, 11);
+    p.fillStyle = '#213038';
+    for (let y = 11; y < H; y += 12) p.fillRect(0, y, W, 1);
+
+    function wave(base, amp, phase, color, thickness) {
+      p.fillStyle = color;
+      p.beginPath(); p.moveTo(12, H);
+      for (let x = 12; x <= 288; x++) {
+        const crest = Math.exp(-Math.pow((x - 210) / 34, 2)) * 28;
+        const y = base + Math.sin(x * .07 + phase) * amp - crest;
+        p.lineTo(x, y);
+      }
+      p.lineTo(288, H); p.closePath(); p.fill();
+      if (thickness) {
+        p.fillStyle = thickness;
+        for (let x = 14; x < 286; x += 3) {
+          const crest = Math.exp(-Math.pow((x - 210) / 34, 2)) * 28;
+          const y = base + Math.sin(x * .07 + phase) * amp - crest;
+          if (crest > 8 && (x % 9) < 4) p.fillRect(x, Math.floor(y), 3, 2);
+        }
+      }
+    }
+    wave(72, 3, 0, '#57101e');
+    wave(66, 4, .8, '#8e1428');
+    wave(60, 3, 1.5, '#c51f37', '#ff6872');
+    wave(56, 2, 2.1, '#e63749', '#ff9b9e');
+
+    // Folding crest and dark cavity.
+    p.fillStyle = '#ff7e87'; p.fillRect(206, 25, 32, 4); p.fillRect(214, 29, 28, 4); p.fillRect(224, 33, 20, 4);
+    p.fillStyle = '#3a0b17'; p.fillRect(213, 35, 31, 5); p.fillRect(220, 40, 24, 4);
+    p.fillStyle = '#f04758'; p.fillRect(237, 31, 8, 5); p.fillRect(243, 36, 6, 8); p.fillRect(248, 44, 4, 8);
+
+    // Venom bubbles embedded in the mass.
+    const bubbles = [[72,61,3],[93,66,2],[123,57,2],[152,68,3],[181,54,2],[260,64,3]];
+    for (const [x,y,r] of bubbles) { p.fillStyle='#4c7826'; p.fillRect(x-r,y-r,r*2+1,r*2+1); p.fillStyle='#b7f45b'; p.fillRect(x-r+1,y-r,r,1); }
+
+    // Storm follows the main ridge instead of becoming confetti.
+    p.strokeStyle = '#8fe0ff'; p.lineWidth = 1; p.beginPath(); p.moveTo(32,58); p.lineTo(78,54); p.lineTo(111,56); p.lineTo(145,50); p.lineTo(176,51); p.lineTo(205,42); p.stroke();
+    p.fillStyle = '#e7f8ff'; for (const [x,y] of [[78,54],[145,50],[205,42]]) p.fillRect(x,y,2,2);
+
+    // Player anchor.
+    p.fillStyle='#0a0d0f'; p.fillRect(142,45,18,22); p.fillStyle='#75828b'; p.fillRect(146,42,10,19); p.fillStyle='#d2a95c'; p.fillRect(158,46,2,16);
+
+    ctx.drawImage(off, 0, 0, canvas.width, canvas.height);
+  </script>
+</body>
+</html>
+
