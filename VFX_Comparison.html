@@ -77,7 +77,7 @@
 
     <section id="motion">
       <h2>Se skillnaden i rörelse</h2>
-      <p class="intro">Båda laddningarna går från ZAK till ZAK DA och vidare mot ZAKDADOM. Titta främst efter vad som händer när DA läggs till: i B lever tidigare vågor vidare och möter den nya impulsen.</p>
+      <p class="intro">Båda laddningarna går från ZAK till ZAK DA och vidare mot ZAKDADOM. Ny ordgeometri easas nu in under 0,36 sekunder: radie, sektor, riktning och hål vecklas ut utan ett storlekshopp. I B lever dessutom tidigare vågor vidare och möter den nya impulsen.</p>
       <figure>
         <div class="frame"><img src="spike_a_b_comparison_motion.gif" alt="Animerad jämförelse av Spike A och Spike B" loading="eager"></div>
         <figcaption>Vänster: procedurshader. Höger: 256×256 height-field. Båda använder samma fasta 2×2 world-space-pixelstorlek genom hela laddningen.</figcaption>
@@ -130,6 +130,7 @@
       <ul>
         <li>Smoke, combat, spell grammar, workbench, Rat Blood-loop, camp-meta och hela femrumsrutten: <b>7/7 godkända</b>.</li>
         <li>Regressionstest: medium och full radie måste ge samma world-pixelstorlek, medan antalet renderade celler måste öka.</li>
+        <li>24 FPS-rörelsefångsten misslyckas automatiskt om ett ord orsakar ett radiesteg större än 12 spelpixlar mellan två kontrollbilder.</li>
         <li>A/B-fångsten startar båda renderers från samma scen och misslyckas om GPU-fältet inte blir redo eller utför arbete.</li>
         <li>Headless-tester utan RenderingDevice fortsätter genom shaderfallbacken utan att påverka spelmekanik eller sparfil.</li>
         <li>Forward+ är nu projektets aktiva renderer; 3D har inte återinförts och spelet är fortfarande äkta top-down 2D-pixelspel.</li>
